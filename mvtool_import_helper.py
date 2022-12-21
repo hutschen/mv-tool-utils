@@ -62,10 +62,10 @@ class Session:
             response_body = response.read()
             return self._json_decode(response_body) if response_body else None
 
-    def authenticate(self):
+    def authenticate(self, username: str | None = None, password: str | None = None):
         # send username and password to as oauth2 request
-        username = input("Username: ")
-        password = getpass("Password: ")
+        username = input("Username: ") if username is None else username
+        password = getpass("Password: ") if password is None else password
 
         # create a request
         form_data = urllib.parse.urlencode(
