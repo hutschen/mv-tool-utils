@@ -146,3 +146,39 @@ class Requirements:
         return self.session._process_json_request(
             self._get_requirement_url(requirement_id), method="DELETE"
         )
+
+
+class Measures:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_measures_url(self, requirement_id: int) -> str:
+        return "/requirements/%d/measures" % requirement_id
+
+    def _get_measure_url(self, measure_id: int) -> str:
+        return "/measures/%d" % measure_id
+
+    def list_measures(self, requirement_id: int) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_measures_url(requirement_id), method="GET"
+        )
+
+    def create_measure(self, requirement_id: int, measure_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_measures_url(requirement_id), measure_data, method="POST"
+        )
+
+    def get_measure(self, measure_id: int) -> dict:
+        return self.session._process_json_request(
+            self._get_measure_url(measure_id), method="GET"
+        )
+
+    def update_measure(self, measure_id: int, measure_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_measure_url(measure_id), measure_data, method="PUT"
+        )
+
+    def delete_measure(self, measure_id: int):
+        return self.session._process_json_request(
+            self._get_measure_url(measure_id), method="DELETE"
+        )
