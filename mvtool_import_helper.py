@@ -79,6 +79,39 @@ class Session:
             self.access_token = self._json_decode(response.read())["access_token"]
 
 
+class Catalogs:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_catalogs_url(self, catalog_id: int | None = None) -> str:
+        return "/catalogs" if catalog_id is None else "/catalogs/%d" % catalog_id
+
+    def list_catalogs(self) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_catalogs_url(), method="GET"
+        )
+
+    def create_catalog(self, catalog_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_catalogs_url(), catalog_data, method="POST"
+        )
+
+    def get_catalog(self, catalog_id) -> dict:
+        return self.session._process_json_request(
+            self._get_catalogs_url(catalog_id), method="GET"
+        )
+
+    def update_catalog(self, catalog_id, catalog_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_catalogs_url(catalog_id), catalog_data, method="PUT"
+        )
+
+    def delete_catalog(self, catalog_id):
+        self.session._process_json_request(
+            self._get_catalogs_url(catalog_id), method="DELETE"
+        )
+
+
 class Projects:
     def __init__(self, session: Session):
         self.session = session
