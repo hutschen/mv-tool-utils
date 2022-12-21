@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"licenser.license": "LGPLv3",
+		"licenser.projectName": "MV-Tool Import Helper"
+	}
+}
