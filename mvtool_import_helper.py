@@ -154,6 +154,50 @@ class CatalogModules:
         )
 
 
+class CatalogRequirements:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_catalog_requirements_url(self, catalog_module_id: int) -> str:
+        return "/catalog-modules/%d/catalog-requirements" % catalog_module_id
+
+    def _get_catalog_requirement_url(self, catalog_requirement_id: int) -> str:
+        return "/catalog-requirements/%d" % catalog_requirement_id
+
+    def list_catalog_requirements(self, catalog_module_id: int) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_catalog_requirements_url(catalog_module_id), method="GET"
+        )
+
+    def create_catalog_requirement(
+        self, catalog_module_id: int, catalog_requirement_data: dict
+    ) -> dict:
+        return self.session._process_json_request(
+            self._get_catalog_requirements_url(catalog_module_id),
+            catalog_requirement_data,
+            method="POST",
+        )
+
+    def get_catalog_requirement(self, catalog_requirement_id: int) -> dict:
+        return self.session._process_json_request(
+            self._get_catalog_requirement_url(catalog_requirement_id), method="GET"
+        )
+
+    def update_catalog_requirement(
+        self, catalog_requirement_id: int, catalog_requirement_data: dict
+    ) -> dict:
+        return self.session._process_json_request(
+            self._get_catalog_requirement_url(catalog_requirement_id),
+            catalog_requirement_data,
+            method="PUT",
+        )
+
+    def delete_catalog_requirement(self, catalog_requirement_id: int):
+        self.session._process_json_request(
+            self._get_catalog_requirement_url(catalog_requirement_id), method="DELETE"
+        )
+
+
 class Projects:
     def __init__(self, session: Session):
         self.session = session
