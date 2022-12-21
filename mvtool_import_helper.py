@@ -111,3 +111,38 @@ class Projects:
             self._get_projects_url(project_id), method="DELETE"
         )
 
+
+class Requirements:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_requirements_url(self, project_id: int) -> str:
+        return "/projects/%d/requirements" % project_id
+
+    def _get_requirement_url(self, requirement_id: int) -> str:
+        return "/requirements/%d" % requirement_id
+
+    def list_requirements(self, project_id: int) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_requirements_url(project_id), method="GET"
+        )
+
+    def create_requirement(self, project_id: int, requirement_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_requirements_url(project_id), requirement_data, method="POST"
+        )
+
+    def get_requirement(self, requirement_id: int) -> dict:
+        return self.session._process_json_request(
+            self._get_requirement_url(requirement_id), method="GET"
+        )
+
+    def update_requirement(self, requirement_id: int, requirement_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_requirement_url(requirement_id), requirement_data, method="PUT"
+        )
+
+    def delete_requirement(self, requirement_id: int):
+        return self.session._process_json_request(
+            self._get_requirement_url(requirement_id), method="DELETE"
+        )
