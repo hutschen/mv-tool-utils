@@ -77,3 +77,37 @@ class Session:
         # send request and set access token
         with urllib.request.urlopen(req, context=self.ssl_context) as response:
             self.access_token = self._json_decode(response.read())["access_token"]
+
+
+class Projects:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_projects_url(self, project_id: int | None = None) -> str:
+        return "/projects" if project_id is None else "/projects/%d" % project_id
+
+    def list_projects(self) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_projects_url(), method="GET"
+        )
+
+    def create_project(self, project_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_projects_url(), project_data, method="POST"
+        )
+
+    def get_project(self, project_id) -> dict:
+        return self.session._process_json_request(
+            self._get_projects_url(project_id), method="GET"
+        )
+
+    def update_project(self, project_id, project_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_projects_url(project_id), project_data, method="PUT"
+        )
+
+    def delete_project(self, project_id):
+        return self.session._process_json_request(
+            self._get_projects_url(project_id), method="DELETE"
+        )
+
