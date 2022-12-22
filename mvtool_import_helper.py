@@ -101,6 +101,18 @@ class JiraProjects:
         )
 
 
+class JiraIssueTypes:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_jira_issue_types_url(self, jira_project_id: str) -> str:
+        return "/jira-projects/%s/jira-issuetypes" % jira_project_id
+
+    def list_jira_issue_types(self, jira_project_id: str) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_jira_issue_types_url(jira_project_id), method="GET"
+        )
+
 class Catalogs:
     def __init__(self, session: Session):
         self.session = session
