@@ -113,6 +113,56 @@ class JiraIssueTypes:
             self._get_jira_issue_types_url(jira_project_id), method="GET"
         )
 
+
+class JiraIssues:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_jira_issues_url(self, jira_project_id: str) -> str:
+        return "/jira-projects/%s/jira-issues" % jira_project_id
+
+    def _get_jira_issue_url(self, jira_issue_id: str) -> str:
+        return "/jira-issues/%s" % jira_issue_id
+
+    def list_jira_issues(self, jira_project_id: str) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_jira_issues_url(jira_project_id), method="GET"
+        )
+
+    def create_jira_issue(self, jira_project_id: str, jira_issue_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_jira_issues_url(jira_project_id),
+            jira_issue_data,
+            method="POST",
+        )
+
+    def get_jira_issue(self, jira_issue_id: str) -> dict:
+        return self.session._process_json_request(
+            self._get_jira_issue_url(jira_issue_id), method="GET"
+        )
+
+    def update_jira_issue(self, jira_issue_id: str, jira_issue_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_jira_issue_url(jira_issue_id),
+            jira_issue_data,
+            method="PUT",
+        )
+
+    def delete_jira_issue(self, jira_issue_id: str) -> None:
+        return self.session._process_json_request(
+            self._get_jira_issue_url(jira_issue_id), method="DELETE"
+        )
+
+    def create_and_link_jira_issue(
+        self, measure_id: int, jira_issue_data: dict
+    ) -> dict:
+        return self.session._process_json_request(
+            "/measures/%d/jira-issue" % measure_id,
+            jira_issue_data,
+            method="POST",
+        )
+
+
 class Catalogs:
     def __init__(self, session: Session):
         self.session = session
