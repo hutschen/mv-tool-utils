@@ -79,6 +79,28 @@ class Session:
             self.access_token = self._json_decode(response.read())["access_token"]
 
 
+class JiraProjects:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_jira_projects_url(self, jira_project_id: str | None = None) -> str:
+        return (
+            "/jira-projects"
+            if jira_project_id is None
+            else "/jira-projects/%s" % jira_project_id
+        )
+
+    def list_jira_projects(self) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_jira_projects_url(), method="GET"
+        )
+
+    def get_jira_project(self, jira_project_id: str) -> dict:
+        return self.session._process_json_request(
+            self._get_jira_projects_url(jira_project_id), method="GET"
+        )
+
+
 class Catalogs:
     def __init__(self, session: Session):
         self.session = session
