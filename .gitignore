@@ -1,3 +1,7 @@
+__pycache__
+*.pyc
+
 internal_tests.py
 tests/*
 example*
+~$*.xlsx
