@@ -351,6 +351,42 @@ class Requirements:
         )
 
 
+class Documents:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def _get_documents_url(self, project_id: int) -> str:
+        return "/projects/%d/documents" % project_id
+
+    def _get_document_url(self, document_id: int) -> str:
+        return "/documents/%d" % document_id
+
+    def list_documents(self, project_id: int) -> list[dict]:
+        return self.session._process_json_request(
+            self._get_documents_url(project_id), method="GET"
+        )
+
+    def create_document(self, project_id: int, document_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_documents_url(project_id), document_data, method="POST"
+        )
+
+    def get_document(self, document_id: int) -> dict:
+        return self.session._process_json_request(
+            self._get_document_url(document_id), method="GET"
+        )
+
+    def update_document(self, document_id: int, document_data: dict) -> dict:
+        return self.session._process_json_request(
+            self._get_document_url(document_id), document_data, method="PUT"
+        )
+
+    def delete_document(self, document_id: int):
+        return self.session._process_json_request(
+            self._get_document_url(document_id), method="DELETE"
+        )
+
+
 class Measures:
     def __init__(self, session: Session):
         self.session = session
