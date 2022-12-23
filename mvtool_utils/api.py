@@ -48,6 +48,18 @@ class Session:
         self.ssl_context.check_hostname = False
         self.ssl_context.verify_mode = ssl.CERT_NONE
 
+        # create API endpoints
+        self.jira_projects = JiraProjects(self)
+        self.jira_issue_types = JiraIssueTypes(self)
+        self.jira_issues = JiraIssues(self)
+        self.catalogs = Catalogs(self)
+        self.catalog_modules = CatalogModules(self)
+        self.catalog_requirements = CatalogRequirements(self)
+        self.projects = Projects(self)
+        self.documents = Documents(self)
+        self.requirements = Requirements(self)
+        self.measures = Measures(self)
+
     def _json_encode(self, data: dict | list[dict]) -> bytes:
         return json.dumps(data, ensure_ascii=False, allow_nan=False).encode("utf-8")
 
