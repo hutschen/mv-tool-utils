@@ -16,10 +16,25 @@
 # along with MV-Tool Utilities. If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import hashlib
 import ssl
 import urllib.parse
 import urllib.request
 from getpass import getpass
+
+
+class ItemCache(dict):
+    def _generate_item_key(self, item_data: dict, **ids) -> str:
+        key_data_str = json.dumps([item_data, ids], sort_keys=True)
+        return hashlib.sha256(key_data_str.encode("utf-8")).hexdigest()
+
+    def get_item(self, item_data: dict, **ids) -> dict:
+        key = self._generate_item_key(item_data, **ids)
+        return self.get(key)
+
+    def set_item(self, item_data: dict, item: dict, **ids) -> None:
+        key = self._generate_item_key(item_data, **ids)
+        self[key] = item
 
 
 class Session:
