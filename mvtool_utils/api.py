@@ -132,6 +132,7 @@ class JiraIssueTypes:
 class JiraIssues:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_jira_issues_url(self, jira_project_id: str) -> str:
         return "/jira-projects/%s/jira-issues" % jira_project_id
@@ -144,12 +145,24 @@ class JiraIssues:
             self._get_jira_issues_url(jira_project_id), method="GET"
         )
 
-    def create_jira_issue(self, jira_project_id: str, jira_issue_data: dict) -> dict:
-        return self.session._process_json_request(
-            self._get_jira_issues_url(jira_project_id),
-            jira_issue_data,
-            method="POST",
+    def create_jira_issue(
+        self, jira_project_id: str, jira_issue_data: dict, use_cache=False
+    ) -> dict:
+        jira_issue = (
+            self.cache.get_item(jira_issue_data, jira_project_id=jira_project_id)
+            if use_cache
+            else None
         )
+        if jira_issue is None:
+            jira_issue = self.session._process_json_request(
+                self._get_jira_issues_url(jira_project_id),
+                jira_issue_data,
+                method="POST",
+            )
+            self.cache.set_item(
+                jira_issue_data, jira_issue, jira_project_id=jira_project_id
+            )
+        return jira_issue
 
     def get_jira_issue(self, jira_issue_id: str) -> dict:
         return self.session._process_json_request(
@@ -181,6 +194,7 @@ class JiraIssues:
 class Catalogs:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_catalogs_url(self, catalog_id: int | None = None) -> str:
         return "/catalogs" if catalog_id is None else "/catalogs/%d" % catalog_id
@@ -190,10 +204,14 @@ class Catalogs:
             self._get_catalogs_url(), method="GET"
         )
 
-    def create_catalog(self, catalog_data: dict) -> dict:
-        return self.session._process_json_request(
-            self._get_catalogs_url(), catalog_data, method="POST"
-        )
+    def create_catalog(self, catalog_data: dict, use_cache=False) -> dict:
+        catalog = self.cache.get_item(catalog_data) if use_cache else None
+        if catalog is None:
+            catalog = self.session._process_json_request(
+                self._get_catalogs_url(), catalog_data, method="POST"
+            )
+            self.cache.set_item(catalog_data, catalog)
+        return catalog
 
     def get_catalog(self, catalog_id) -> dict:
         return self.session._process_json_request(
@@ -214,6 +232,7 @@ class Catalogs:
 class CatalogModules:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_catalog_modules_url(self, catalog_id: int) -> str:
         return "/catalogs/%d/catalog-modules" % catalog_id
@@ -226,12 +245,24 @@ class CatalogModules:
             self._get_catalog_modules_url(catalog_id), method="GET"
         )
 
-    def create_catalog_module(self, catalog_id: int, catalog_module_data: dict) -> dict:
-        return self.session._process_json_request(
-            self._get_catalog_modules_url(catalog_id),
-            catalog_module_data,
-            method="POST",
+    def create_catalog_module(
+        self, catalog_id: int, catalog_module_data: dict, use_cache=False
+    ) -> dict:
+        catalog_module = (
+            self.cache.get_item(catalog_module_data, catalog_id=catalog_id)
+            if use_cache
+            else None
         )
+        if catalog_module is None:
+            catalog_module = self.session._process_json_request(
+                self._get_catalog_modules_url(catalog_id),
+                catalog_module_data,
+                method="POST",
+            )
+            self.cache.set_item(
+                catalog_module_data, catalog_module, catalog_id=catalog_id
+            )
+        return catalog_module
 
     def get_catalog_module(self, catalog_module_id: int) -> dict:
         return self.session._process_json_request(
@@ -256,6 +287,7 @@ class CatalogModules:
 class CatalogRequirements:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_catalog_requirements_url(self, catalog_module_id: int) -> str:
         return "/catalog-modules/%d/catalog-requirements" % catalog_module_id
@@ -269,13 +301,27 @@ class CatalogRequirements:
         )
 
     def create_catalog_requirement(
-        self, catalog_module_id: int, catalog_requirement_data: dict
+        self, catalog_module_id: int, catalog_requirement_data: dict, use_cache=False
     ) -> dict:
-        return self.session._process_json_request(
-            self._get_catalog_requirements_url(catalog_module_id),
-            catalog_requirement_data,
-            method="POST",
+        catalog_requirement = (
+            self.cache.get_item(
+                catalog_requirement_data, catalog_module_id=catalog_module_id
+            )
+            if use_cache
+            else None
         )
+        if catalog_requirement is None:
+            catalog_requirement = self.session._process_json_request(
+                self._get_catalog_requirements_url(catalog_module_id),
+                catalog_requirement_data,
+                method="POST",
+            )
+            self.cache.set_item(
+                catalog_requirement_data,
+                catalog_requirement,
+                catalog_module_id=catalog_module_id,
+            )
+        return catalog_requirement
 
     def get_catalog_requirement(self, catalog_requirement_id: int) -> dict:
         return self.session._process_json_request(
@@ -300,6 +346,7 @@ class CatalogRequirements:
 class Projects:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_projects_url(self, project_id: int | None = None) -> str:
         return "/projects" if project_id is None else "/projects/%d" % project_id
@@ -309,10 +356,14 @@ class Projects:
             self._get_projects_url(), method="GET"
         )
 
-    def create_project(self, project_data: dict) -> dict:
-        return self.session._process_json_request(
-            self._get_projects_url(), project_data, method="POST"
-        )
+    def create_project(self, project_data: dict, use_cache=False) -> dict:
+        project = self.cache.get_item(project_data) if use_cache else None
+        if project is None:
+            project = self.session._process_json_request(
+                self._get_projects_url(), project_data, method="POST"
+            )
+            self.cache.set_item(project_data, project)
+        return project
 
     def get_project(self, project_id) -> dict:
         return self.session._process_json_request(
@@ -333,6 +384,7 @@ class Projects:
 class Requirements:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_requirements_url(self, project_id: int) -> str:
         return "/projects/%d/requirements" % project_id
@@ -345,10 +397,20 @@ class Requirements:
             self._get_requirements_url(project_id), method="GET"
         )
 
-    def create_requirement(self, project_id: int, requirement_data: dict) -> dict:
-        return self.session._process_json_request(
-            self._get_requirements_url(project_id), requirement_data, method="POST"
+    def create_requirement(
+        self, project_id: int, requirement_data: dict, use_cache=False
+    ) -> dict:
+        requirement = (
+            self.cache.get_item(requirement_data, project_id=project_id)
+            if use_cache
+            else None
         )
+        if requirement is None:
+            requirement = self.session._process_json_request(
+                self._get_requirements_url(project_id), requirement_data, method="POST"
+            )
+            self.cache.set_item(requirement_data, requirement, project_id=project_id)
+        return requirement
 
     def get_requirement(self, requirement_id: int) -> dict:
         return self.session._process_json_request(
@@ -369,6 +431,7 @@ class Requirements:
 class Documents:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_documents_url(self, project_id: int) -> str:
         return "/projects/%d/documents" % project_id
@@ -381,10 +444,20 @@ class Documents:
             self._get_documents_url(project_id), method="GET"
         )
 
-    def create_document(self, project_id: int, document_data: dict) -> dict:
-        return self.session._process_json_request(
-            self._get_documents_url(project_id), document_data, method="POST"
+    def create_document(
+        self, project_id: int, document_data: dict, use_cache=False
+    ) -> dict:
+        document = (
+            self.cache.get_item(document_data, project_id=project_id)
+            if use_cache
+            else None
         )
+        if document is None:
+            document = self.session._process_json_request(
+                self._get_documents_url(project_id), document_data, method="POST"
+            )
+            self.cache.set_item(document_data, document, project_id=project_id)
+        return document
 
     def get_document(self, document_id: int) -> dict:
         return self.session._process_json_request(
@@ -405,6 +478,7 @@ class Documents:
 class Measures:
     def __init__(self, session: Session):
         self.session = session
+        self.cache = ItemCache()
 
     def _get_measures_url(self, requirement_id: int) -> str:
         return "/requirements/%d/measures" % requirement_id
@@ -417,10 +491,20 @@ class Measures:
             self._get_measures_url(requirement_id), method="GET"
         )
 
-    def create_measure(self, requirement_id: int, measure_data: dict) -> dict:
-        return self.session._process_json_request(
-            self._get_measures_url(requirement_id), measure_data, method="POST"
+    def create_measure(
+        self, requirement_id: int, measure_data: dict, use_cache=False
+    ) -> dict:
+        measure = (
+            self.cache.get_item(measure_data, requirement_id=requirement_id)
+            if use_cache
+            else None
         )
+        if measure is None:
+            measure = self.session._process_json_request(
+                self._get_measures_url(requirement_id), measure_data, method="POST"
+            )
+            self.cache.set_item(measure_data, measure, requirement_id=requirement_id)
+        return measure
 
     def get_measure(self, measure_id: int) -> dict:
         return self.session._process_json_request(
