@@ -21,6 +21,17 @@ import ssl
 import urllib.parse
 import urllib.request
 from getpass import getpass
+from typing import Any
+
+
+def _resolve_and_get(item: dict, key: str) -> Any:
+    try:
+        return item[key]
+    except KeyError as error:
+        if "_" not in key:
+            raise error
+        key1, key2 = key.rsplit("_", 1)
+        return _resolve_and_get(item[key1], key2)
 
 
 class ItemCache(dict):
@@ -35,6 +46,11 @@ class ItemCache(dict):
     def set_item(self, item_data: dict, item: dict, **ids) -> None:
         key = self._generate_item_key(item_data, **ids)
         self[key] = item
+
+    def set_items(self, items: list[dict], keys: set[str], **ids) -> None:
+        for item in items:
+            item_data = {key: _resolve_and_get(item, key) for key in keys}
+            self.set_item(item_data, item, **ids)
 
 
 class Session:
@@ -152,6 +168,10 @@ class JiraIssues:
     def _get_jira_issue_url(self, jira_issue_id: str) -> str:
         return "/jira-issues/%s" % jira_issue_id
 
+    def cache_jira_issues(self, jira_project_id: str, keys: set[str]):
+        jira_issues = self.list_jira_issues(jira_project_id)
+        self.cache.set_items(jira_issues, keys=keys, jira_project_id=jira_project_id)
+
     def list_jira_issues(self, jira_project_id: str) -> list[dict]:
         return self.session._process_json_request(
             self._get_jira_issues_url(jira_project_id), method="GET"
@@ -211,6 +231,10 @@ class Catalogs:
     def _get_catalogs_url(self, catalog_id: int | None = None) -> str:
         return "/catalogs" if catalog_id is None else "/catalogs/%d" % catalog_id
 
+    def cache_catalogs(self, keys: set[str]):
+        catalogs = self.list_catalogs()
+        self.cache.set_items(catalogs, keys=keys)
+
     def list_catalogs(self) -> list[dict]:
         return self.session._process_json_request(
             self._get_catalogs_url(), method="GET"
@@ -251,6 +275,10 @@ class CatalogModules:
 
     def _get_catalog_module_url(self, catalog_module_id: int) -> str:
         return "/catalog-modules/%d" % catalog_module_id
+
+    def cache_catalog_modules(self, catalog_id: int, keys: set[str]):
+        catalog_modules = self.list_catalog_modules(catalog_id)
+        self.cache.set_items(catalog_modules, keys=keys, catalog_id=catalog_id)
 
     def list_catalog_modules(self, catalog_id: int) -> list[dict]:
         return self.session._process_json_request(
@@ -306,6 +334,12 @@ class CatalogRequirements:
 
     def _get_catalog_requirement_url(self, catalog_requirement_id: int) -> str:
         return "/catalog-requirements/%d" % catalog_requirement_id
+
+    def cache_catalog_requirements(self, catalog_module_id: int, keys: set[str]):
+        catalog_requirements = self.list_catalog_requirements(catalog_module_id)
+        self.cache.set_items(
+            catalog_requirements, keys=keys, catalog_module_id=catalog_module_id
+        )
 
     def list_catalog_requirements(self, catalog_module_id: int) -> list[dict]:
         return self.session._process_json_request(
@@ -363,6 +397,10 @@ class Projects:
     def _get_projects_url(self, project_id: int | None = None) -> str:
         return "/projects" if project_id is None else "/projects/%d" % project_id
 
+    def cache_projects(self, keys: set[str]):
+        projects = self.list_projects()
+        self.cache.set_items(projects, keys=keys)
+
     def list_projects(self) -> list[dict]:
         return self.session._process_json_request(
             self._get_projects_url(), method="GET"
@@ -403,6 +441,10 @@ class Requirements:
 
     def _get_requirement_url(self, requirement_id: int) -> str:
         return "/requirements/%d" % requirement_id
+
+    def cache_requirements(self, project_id: int, keys: set[str]):
+        requirements = self.list_requirements(project_id)
+        self.cache.set_items(requirements, keys=keys, project_id=project_id)
 
     def list_requirements(self, project_id: int) -> list[dict]:
         return self.session._process_json_request(
@@ -451,6 +493,10 @@ class Documents:
     def _get_document_url(self, document_id: int) -> str:
         return "/documents/%d" % document_id
 
+    def cache_documents(self, project_id: int, keys: set[str]):
+        documents = self.list_documents(project_id)
+        self.cache.set_items(documents, keys=keys, project_id=project_id)
+
     def list_documents(self, project_id: int) -> list[dict]:
         return self.session._process_json_request(
             self._get_documents_url(project_id), method="GET"
@@ -497,6 +543,10 @@ class Measures:
 
     def _get_measure_url(self, measure_id: int) -> str:
         return "/measures/%d" % measure_id
+
+    def cache_measures(self, requirement_id: int, keys: set[str]):
+        measures = self.list_measures(requirement_id)
+        self.cache.set_items(measures, keys=keys, requirement_id=requirement_id)
 
     def list_measures(self, requirement_id: int) -> list[dict]:
         return self.session._process_json_request(
