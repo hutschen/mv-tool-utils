@@ -21,7 +21,7 @@ import ssl
 import urllib.parse
 import urllib.request
 from getpass import getpass
-from typing import Any
+from typing import Any, Union
 
 
 def _resolve_and_get(item: dict, key: str) -> Any:
@@ -76,15 +76,15 @@ class Session:
         self.requirements = Requirements(self)
         self.measures = Measures(self)
 
-    def _json_encode(self, data: dict | list[dict]) -> bytes:
+    def _json_encode(self, data: Union[dict, list[dict]]) -> bytes:
         return json.dumps(data, ensure_ascii=False, allow_nan=False).encode("utf-8")
 
-    def _json_decode(self, data: bytes) -> dict | list[dict]:
+    def _json_decode(self, data: bytes) -> Union[dict, list[dict]]:
         return json.loads(data.decode("utf-8"))
 
     def _process_json_request(
-        self, url: str, data: dict | list[dict] | None = None, method=None
-    ) -> dict | list[dict] | None:
+        self, url: str, data: Union[dict, list[dict], None] = None, method=None
+    ) -> Union[dict, list[dict], None]:
         # create a request
         url = self.base_url + url
         req = (
@@ -105,7 +105,9 @@ class Session:
             response_body = response.read()
             return self._json_decode(response_body) if response_body else None
 
-    def authenticate(self, username: str | None = None, password: str | None = None):
+    def authenticate(
+        self, username: Union[str, None] = None, password: Union[str, None] = None
+    ):
         # send username and password to as oauth2 request
         username = input("Username: ") if username is None else username
         password = getpass("Password: ") if password is None else password
@@ -126,7 +128,7 @@ class JiraProjects:
     def __init__(self, session: Session):
         self.session = session
 
-    def _get_jira_projects_url(self, jira_project_id: str | None = None) -> str:
+    def _get_jira_projects_url(self, jira_project_id: Union[str, None] = None) -> str:
         return (
             "/jira-projects"
             if jira_project_id is None
@@ -228,7 +230,7 @@ class Catalogs:
         self.session = session
         self.cache = ItemCache()
 
-    def _get_catalogs_url(self, catalog_id: int | None = None) -> str:
+    def _get_catalogs_url(self, catalog_id: Union[int, None] = None) -> str:
         return "/catalogs" if catalog_id is None else "/catalogs/%d" % catalog_id
 
     def cache_catalogs(self, keys: set[str]):
@@ -394,7 +396,7 @@ class Projects:
         self.session = session
         self.cache = ItemCache()
 
-    def _get_projects_url(self, project_id: int | None = None) -> str:
+    def _get_projects_url(self, project_id: Union[int, None] = None) -> str:
         return "/projects" if project_id is None else "/projects/%d" % project_id
 
     def cache_projects(self, keys: set[str]):
