@@ -22,7 +22,9 @@ from typing import Iterable, Iterator
 class ExcelCSV:
     def iter_csv(self, filename) -> Iterator[dict]:
         with open(filename, "r") as csv_file:
-            csv_file.read(1)  # Skip BOM
+            # skip BOM, if present
+            if csv_file.read(1) != "\ufeff":
+                csv_file.seek(0)
             reader = csv.DictReader(csv_file, delimiter=";")
             for row in reader:
                 yield row
