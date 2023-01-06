@@ -20,14 +20,17 @@ from typing import Iterable, Iterator
 
 
 class ExcelCSV:
-    def iter_csv(self, filename) -> Iterator[dict]:
+    def iter_csv(self, filename, strip=True) -> Iterator[dict]:
         with open(filename, "r") as csv_file:
             # skip BOM, if present
             if csv_file.read(1) != "\ufeff":
                 csv_file.seek(0)
             reader = csv.DictReader(csv_file, delimiter=";")
             for row in reader:
-                yield row
+                if strip:
+                    yield {key: value.strip() for key, value in row.items()}
+                else:
+                    yield row
 
     def read_csv(self, filename) -> list[dict]:
         return list(self.iter_csv(filename))
